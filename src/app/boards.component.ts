@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { AuthService } from './auth.service';
 import { BoardService } from './board.service';
 import { WorkspaceService } from './workspace.service';
@@ -70,7 +71,7 @@ import { AttachmentItem } from './attachment.types';
               <p>{{ board.description || 'No description provided.' }}</p>
             </div>
             <div class="board-preview-footer">
-              <span class="workspace-badge">{{ getWorkspaceName(board.workspaceId) }}</span>
+              <span class="workspace-badge">{{ board.workspaceName || getWorkspaceName(board.workspaceId) }}</span>
               <button class="btn btn-ghost btn-sm btn-icon-only text-white" (click)="deleteBoard(board.id); $event.stopPropagation()" title="Delete Board">🗑</button>
             </div>
           </div>
@@ -85,7 +86,7 @@ import { AttachmentItem } from './attachment.types';
               <span>⬅</span> Back to Dashboard
             </button>
             <h1 class="board-title">{{ activeBoard()?.name }}</h1>
-            <span class="workspace-tag">{{ getWorkspaceName(activeBoard()!.workspaceId) }}</span>
+            <span class="workspace-tag">{{ activeBoard()?.workspaceName || getWorkspaceName(activeBoard()!.workspaceId) }}</span>
           </div>
 
           <div class="header-right">
@@ -240,8 +241,9 @@ import { AttachmentItem } from './attachment.types';
                     {{ bm.email?.substring(0, 2)?.toUpperCase() || 'U' }}
                   </div>
                   <div>
-                    <span class="member-email">{{ bm.email || bm.userId }}</span>
-                    <span class="badge badge-gray" style="font-size:0.65rem; padding:1px 4px; display:inline-block; margin-left:4px;">{{ bm.role || 'Member' }}</span>
+                    <span class="member-email">{{ getUserDisplayName(bm.email) }}</span>
+                    <span style="font-size:0.72rem; color:#5e6c84; display:block;">{{ bm.email }}</span>
+                    <span class="badge badge-gray" style="font-size:0.65rem; padding:1px 4px; display:inline-block; margin-top:2px;">{{ bm.role || 'Member' }}</span>
                   </div>
                 </div>
                 <div class="member-actions" (click)="$event.stopPropagation()">
@@ -263,8 +265,12 @@ import { AttachmentItem } from './attachment.types';
                 <h4>➕ Invite Board Member</h4>
                 <form (ngSubmit)="inviteBoardMember()" class="invite-member-form">
                   <div class="form-group">
-                    <label class="form-label">User Email</label>
-                    <input class="form-control" type="email" [(ngModel)]="newBoardInviteEmail" name="newBoardInviteEmail" placeholder="user@trello.local" required />
+                    <label class="form-label">Select User</label>
+                    <select class="form-control" [(ngModel)]="newBoardInviteEmail" name="newBoardInviteEmail" required>
+                      <option value="" disabled>-- Select a user --</option>
+                      <option *ngFor="let u of availableUsersForBoard()" [value]="u.email">{{ u.username }} ({{ u.email }})</option>
+                    </select>
+                    <p style="font-size:0.78rem; color:#5e6c84; margin-top:4px;" *ngIf="availableUsersForBoard().length === 0">All registered users are already board members.</p>
                   </div>
                   <div class="form-group">
                     <label class="form-label">Role</label>
@@ -275,7 +281,7 @@ import { AttachmentItem } from './attachment.types';
                       <option value="Viewer">Viewer</option>
                     </select>
                   </div>
-                  <button class="btn btn-success btn-sm" type="submit">Invite Member</button>
+                  <button class="btn btn-success btn-sm" type="submit" [disabled]="!newBoardInviteEmail">Invite Member</button>
                 </form>
               </div>
             </div>
@@ -376,7 +382,7 @@ import { AttachmentItem } from './attachment.types';
               <div class="comments-list-container" *ngIf="cardComments().length > 0">
                 <div *ngFor="let comm of cardComments()" class="comment-item-row animate-in">
                   <div class="comment-avatar">
-                    {{ getAssigneeEmail(comm.userId)?.substring(0, 2)?.toUpperCase() || 'U' }}
+                    {{ getAssigneeEmail(comm.userId).substring(0, 2).toUpperCase() }}
                   </div>
                   <div class="comment-content">
                     <div class="comment-header">
@@ -773,6 +779,7 @@ export class BoardsComponent implements OnInit {
   private cardService = inject(CardService);
   private commentService = inject(CommentService);
   private attachmentService = inject(AttachmentService);
+  private route = inject(ActivatedRoute);
 
   // States
   workspaces = signal<Workspace[]>([]);
@@ -833,8 +840,20 @@ export class BoardsComponent implements OnInit {
   ngOnInit() {
     if (this.authService.isAuthenticated()) {
       this.loadWorkspaces();
-      this.loadBoards();
       this.loadUsers();
+      this.loadBoardsThenOpenFromParam();
+    }
+  }
+
+  /** Load boards and then open a specific board if ?boardId= is in the URL */
+  private async loadBoardsThenOpenFromParam() {
+    await this.loadBoards();
+    const boardId = this.route.snapshot.queryParamMap.get('boardId');
+    if (boardId) {
+      const board = this.boards().find(b => b.id === boardId);
+      if (board) {
+        await this.enterBoardView(board);
+      }
     }
   }
 
@@ -850,6 +869,18 @@ export class BoardsComponent implements OnInit {
       const list = await this.authService.fetchUsers();
       this.registeredUsers.set(list.map(u => ({ id: u.id, email: u.email })));
     } catch {}
+  }
+
+  availableUsersForBoard(): Array<{email: string; username: string}> {
+    const memberEmails = new Set(this.activeBoardMembers().map(m => m.email?.toLowerCase()));
+    return this.registeredUsers()
+      .filter(u => !memberEmails.has(u.email.toLowerCase()))
+      .map(u => ({ email: u.email, username: u.email.split('@')[0] }));
+  }
+
+  getUserDisplayName(email?: string): string {
+    if (!email) return 'Unknown Member';
+    return email.split('@')[0];
   }
 
   async loadBoards() {

@@ -9,7 +9,7 @@ import { CommentItem } from './comment.types';
 @Component({
   selector: 'app-comments',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="page-container animate-in" style="max-width: 720px;">
       <div class="page-header">

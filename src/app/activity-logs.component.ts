@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivityLogService } from './activity-log.service';
 import { ActivityLogItem } from './activity-log.types';
+import { AuthService } from './auth.service';
 
 @Component({
   selector: 'app-activity-logs',
@@ -22,7 +23,14 @@ import { ActivityLogItem } from './activity-log.types';
       <div class="card">
         <div class="card-header">Activity History Audit Trail</div>
         <div class="card-body" style="padding: 0;">
-          <div *ngIf="logs().length === 0" class="empty-state">
+          <div *ngIf="!auth.isAuthenticated() || auth.role() !== 'Admin'" class="empty-state access-denied">
+            <span class="empty-state-icon">🔒</span>
+            <h3>Access Denied</h3>
+            <p>These logs are only available for administrators.</p>
+          </div>
+
+          <div *ngIf="auth.isAuthenticated() && auth.role() === 'Admin'">
+            <div *ngIf="logs().length === 0" class="empty-state">
             <span class="empty-state-icon">🕒</span>
             <h3>No logs recorded</h3>
             <p>Activity logs will appear here as users perform actions in the system.</p>
@@ -58,6 +66,7 @@ import { ActivityLogItem } from './activity-log.types';
     </div>
   `,
   styles: [`
+    .access-denied { background: #fafbfc; border-radius: 0 0 6px 6px; }
     .activity-timeline {
       padding: 24px;
       display: flex;
@@ -132,15 +141,17 @@ import { ActivityLogItem } from './activity-log.types';
 export class ActivityLogsComponent implements OnInit {
   logs = signal<ActivityLogItem[]>([]);
 
-  constructor(private activityLogService: ActivityLogService) {}
+  constructor(public auth: AuthService, private activityLogService: ActivityLogService) { }
 
   ngOnInit() {
-    this.loadLogs();
+    if (this.auth.isAuthenticated() && this.auth.role() === 'Admin') {
+      this.loadLogs();
+    }
   }
 
   async loadLogs() {
     const items = await this.activityLogService.getAllLogs();
-    this.logs.set(items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+    this.logs.set(items.sort((a: ActivityLogItem, b: ActivityLogItem) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
   }
 
   getActionEmoji(action: string): string {

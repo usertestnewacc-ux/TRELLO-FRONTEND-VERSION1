@@ -23,4 +23,8 @@ export class ListService {
   deleteList(id: string): Promise<void> {
     return firstValueFrom(this.http.delete<void>(`${this.apiUrl}/listManagement/${id}`));
   }
+
+  getAllLists(): Promise<ListItem[]> {
+    return firstValueFrom(this.http.get<ListItem[]>(`${this.apiUrl}/lists`));
+  }
 }

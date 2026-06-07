@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { LandingComponent } from './landing.component';
 import { LoginComponent } from './login.component';
 import { RegisterComponent } from './register.component';
 import { DashboardComponent } from './dashboard.component';
@@ -15,7 +16,7 @@ import { authGuard } from './auth.guard';
 import { adminGuard } from './admin.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: '', component: LandingComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   {
