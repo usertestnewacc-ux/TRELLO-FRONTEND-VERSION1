@@ -27,4 +27,8 @@ export class CardService {
   reorderCards(payload: ReorderCardsPayload): Promise<CardItem[]> {
     return firstValueFrom(this.http.put<CardItem[]>(`${this.apiUrl}/cardManagement/reorder`, payload));
   }
+
+  getAllCards(): Promise<CardItem[]> {
+    return firstValueFrom(this.http.get<CardItem[]>(`${this.apiUrl}/cards`));
+  }
 }

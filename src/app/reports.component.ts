@@ -16,7 +16,13 @@ import { DashboardReport, ChartSegment } from './report.types';
         <p>Please sign in to view dashboard analytics.</p>
       </div>
 
-      <div *ngIf="auth.isAuthenticated()">
+      <div *ngIf="auth.isAuthenticated() && auth.role() !== 'Admin'" class="info-card access-denied">
+        <span class="icon">🔒</span>
+        <h3>Access Denied</h3>
+        <p>These reports are only available for administrators.</p>
+      </div>
+
+      <div *ngIf="auth.isAuthenticated() && auth.role() === 'Admin'">
         <button class="primary" type="button" (click)="loadReport()">Refresh Report</button>
         <p *ngIf="message()" class="message">{{ message() }}</p>
 
@@ -93,6 +99,9 @@ import { DashboardReport, ChartSegment } from './report.types';
     ".bar-fill { height: 100%; background: #2563eb; border-radius: 999px; }",
     ".primary { padding: 0.8rem 1rem; border: none; border-radius: 8px; background: #2563eb; color: #fff; cursor: pointer; }",
     ".info-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; }",
+    ".access-denied { text-align: center; padding: 3rem 1rem; color: #4b5563; }",
+    ".access-denied .icon { font-size: 2.5rem; display: block; margin-bottom: 1rem; }",
+    ".access-denied h3 { margin: 0 0 0.5rem; color: #111827; }",
     ".message { margin-top: 1rem; color: #111827; font-weight: 600; }"
   ]
 })
@@ -104,7 +113,7 @@ export class ReportsComponent implements OnInit {
   constructor(public auth: AuthService, private reportService: ReportService) {}
 
   ngOnInit() {
-    if (this.auth.isAuthenticated()) {
+    if (this.auth.isAuthenticated() && this.auth.role() === 'Admin') {
       this.loadReport();
     }
   }

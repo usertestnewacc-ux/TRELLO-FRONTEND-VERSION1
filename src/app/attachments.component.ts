@@ -7,7 +7,7 @@ import { AttachmentItem } from './attachment.types';
 @Component({
   selector: 'app-attachments',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   template: `
     <div class="page-container animate-in" style="max-width: 720px;">
       <div class="page-header">
