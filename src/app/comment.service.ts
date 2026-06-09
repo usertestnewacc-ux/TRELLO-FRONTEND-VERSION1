@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { apiUrl } from './api-url';
 import { CommentItem, CreateCommentPayload } from './comment.types';
 
 @Injectable({ providedIn: 'root' })
 export class CommentService {
   private http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5108/api';
+  private readonly apiUrl = apiUrl;
 
   getComments(cardId: string): Promise<CommentItem[]> {
     return firstValueFrom(this.http.get<CommentItem[]>(`${this.apiUrl}/comments/card/${cardId}`));

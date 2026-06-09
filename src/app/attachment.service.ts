@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { apiUrl } from './api-url';
 import { AttachmentItem } from './attachment.types';
 
 @Injectable({ providedIn: 'root' })
 export class AttachmentService {
   private http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5108/api';
+  private readonly apiUrl = apiUrl;
 
   getAttachments(cardId: string): Promise<AttachmentItem[]> {
     return firstValueFrom(this.http.get<AttachmentItem[]>(`${this.apiUrl}/attachments/card/${cardId}`));

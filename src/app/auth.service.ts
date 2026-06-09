@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { apiUrl } from './api-url';
 
 export interface UserInfo {
   email: string;
@@ -32,7 +33,7 @@ export class AuthService {
   private http = inject(HttpClient);
 
   private readonly TOKEN_KEY = 'trello-token';
-  readonly apiUrl = 'http://localhost:5108';
+  readonly apiUrl = apiUrl;
 
   private token = signal<string | null>(localStorage.getItem(this.TOKEN_KEY));
   user = computed<UserInfo | null>(() => this.decodeToken(this.token()));

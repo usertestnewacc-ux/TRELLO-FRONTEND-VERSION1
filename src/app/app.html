@@ -85,7 +85,7 @@
 
   .search-container {
     position: relative;
-    width: 250px;
+    width: 260px;
     display: flex;
     align-items: center;
   }
@@ -95,7 +95,7 @@
     background: #ffffff;
     border: 1px solid #dfe1e6;
     border-radius: 4px;
-    padding: 0 8px 0 32px;
+    padding: 0 28px 0 32px;
     font-size: 0.85rem;
     color: #172b4d;
     transition: width 0.15s ease, border-color 0.15s;
@@ -104,6 +104,7 @@
     border-color: #0052cc;
     outline: none;
     box-shadow: 0 0 0 1px #0052cc;
+    width: 300px;
   }
   .search-icon {
     position: absolute;
@@ -122,6 +123,7 @@
     font-size: 0.75rem;
     padding: 2px 4px;
     border-radius: 2px;
+    line-height: 1;
   }
   .search-clear-btn:hover { color: #172b4d; }
 
@@ -130,13 +132,32 @@
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    width: 320px;
+    width: 360px;
     background: #fff;
     border-radius: 6px;
     box-shadow: 0 8px 24px rgba(9,30,66,0.18), 0 0 1px rgba(9,30,66,0.12);
     z-index: 500;
     overflow: hidden;
     animation: dropFadeIn 0.12s ease;
+  }
+  .search-results-header {
+    padding: 8px 14px 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #5e6c84;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #f4f5f7;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .search-result-count {
+    font-size: 0.65rem;
+    color: #8993a4;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
   }
   .search-result-item {
     display: flex;
@@ -145,21 +166,75 @@
     padding: 10px 14px;
     cursor: pointer;
     transition: background 0.1s;
+    text-decoration: none;
   }
   .search-result-item:hover { background: #f4f5f7; }
-  .search-result-icon { font-size: 1rem; flex-shrink: 0; }
+  .search-result-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+  .search-result-icon.icon-ws    { background: #fff0b3; }
+  .search-result-icon.icon-board { background: #e8f0fe; }
+  .search-result-icon.icon-card  { background: #e3fcef; }
   .search-result-info {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-width: 0;
   }
   .search-result-name {
     font-size: 0.875rem;
     font-weight: 600;
     color: #172b4d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .search-result-sub {
     font-size: 0.72rem;
     color: #5e6c84;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .search-result-type-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .badge-workspace { background:#fff0b3; color:#7a6000; }
+  .badge-board     { background:#e8f0fe; color:#0052cc; }
+  .badge-card      { background:#e3fcef; color:#1d7f54; }
+  .search-no-results {
+    padding: 24px 14px;
+    text-align: center;
+    color: #5e6c84;
+    font-size: 0.85rem;
+  }
+  .search-no-results span { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+  .search-no-results p { margin: 4px 0 0; font-size: 0.75rem; color: #8993a4; }
+  .search-footer {
+    padding: 6px 14px;
+    border-top: 1px solid #f4f5f7;
+    font-size: 0.72rem;
+    color: #8993a4;
+    text-align: center;
+  }
+  .search-loading {
+    padding: 16px 14px;
+    text-align: center;
+    color: #5e6c84;
+    font-size: 0.82rem;
   }
 
   /* Create dropdown */
@@ -468,23 +543,49 @@
       <input
         type="text"
         class="search-input"
-        placeholder="Search workspaces, boards..."
+        placeholder="Search workspaces, boards, cards..."
         [value]="searchQuery()"
         (input)="onSearchInput($any($event.target).value)"
-        (focus)="onSearchInput($any($event.target).value)"
-        id="global-search-input" />
-      <button class="search-clear-btn" *ngIf="searchQuery()" (click)="clearSearch()">✕</button>
+        (keydown.escape)="clearSearch()"
+        (keydown.enter)="searchResults().length > 0 ? onSearchResultClick(searchResults()[0]) : null"
+        id="global-search-input"
+        autocomplete="off" />
+      <button class="search-clear-btn" *ngIf="searchQuery()" (click)="clearSearch()" title="Clear search">✕</button>
 
       <!-- Search results dropdown -->
       <div class="search-results-dropdown" *ngIf="showSearchResults()">
-        <div *ngFor="let result of searchResults()"
-             class="search-result-item"
-             (click)="onSearchResultClick(result)">
-          <span class="search-result-icon">{{ result.type === 'workspace' ? '💼' : '📋' }}</span>
-          <div class="search-result-info">
-            <span class="search-result-name">{{ result.name }}</span>
-            <span class="search-result-sub">{{ result.subTitle }}</span>
+        <!-- Results exist -->
+        <ng-container *ngIf="searchResults().length > 0">
+          <div class="search-results-header">
+            Best matches
+            <span class="search-result-count">{{ searchResults().length }} result{{ searchResults().length !== 1 ? 's' : '' }}</span>
           </div>
+          <div *ngFor="let result of searchResults()"
+               class="search-result-item"
+               (click)="onSearchResultClick(result)">
+            <span class="search-result-icon"
+                  [class.icon-ws]="result.type === 'workspace'"
+                  [class.icon-board]="result.type === 'board'"
+                  [class.icon-card]="result.type === 'card'">
+              {{ result.type === 'workspace' ? '💼' : result.type === 'board' ? '📋' : '🗂' }}
+            </span>
+            <div class="search-result-info">
+              <span class="search-result-name">{{ result.name }}</span>
+              <span class="search-result-sub" *ngIf="result.subTitle">{{ result.subTitle }}</span>
+            </div>
+            <span class="search-result-type-badge"
+                  [class.badge-workspace]="result.type === 'workspace'"
+                  [class.badge-board]="result.type === 'board'"
+                  [class.badge-card]="result.type === 'card'">
+              {{ result.type }}
+            </span>
+          </div>
+          <div class="search-footer">Click a result or press Enter for top match</div>
+        </ng-container>
+        <!-- No results (only show when user has typed something) -->
+        <div class="search-no-results" *ngIf="searchResults().length === 0">
+          <span>🔍</span>
+          <p>No results for "{{ searchQuery() }}"</p>
         </div>
       </div>
     </div>

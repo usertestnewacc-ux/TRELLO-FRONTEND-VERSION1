@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { apiUrl } from './api-url';
 import {
   Board,
   BoardMember,
@@ -13,7 +14,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class BoardService {
   private http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5108/api';
+  private readonly apiUrl = apiUrl;
 
   getBoards(): Promise<Board[]> {
     return firstValueFrom(this.http.get<Board[]>(`${this.apiUrl}/boards`));

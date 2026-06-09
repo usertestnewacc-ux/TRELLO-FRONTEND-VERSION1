@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { apiUrl } from './api-url';
 import { CreateListPayload, ListItem, ReorderListsPayload } from './list.types';
 
 @Injectable({ providedIn: 'root' })
 export class ListService {
   private http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5108/api';
+  private readonly apiUrl = apiUrl;
 
   getLists(boardId: string): Promise<ListItem[]> {
     return firstValueFrom(this.http.get<ListItem[]>(`${this.apiUrl}/listManagement/board/${boardId}`));

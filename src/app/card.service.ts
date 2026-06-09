@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { apiUrl } from './api-url';
 import { CardItem, CreateCardPayload, ReorderCardsPayload, UpdateCardPayload } from './card.types';
 
 @Injectable({ providedIn: 'root' })
 export class CardService {
   private http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5108/api';
+  private readonly apiUrl = apiUrl;
 
   getCards(listId: string): Promise<CardItem[]> {
     return firstValueFrom(this.http.get<CardItem[]>(`${this.apiUrl}/cardManagement/list/${listId}`));

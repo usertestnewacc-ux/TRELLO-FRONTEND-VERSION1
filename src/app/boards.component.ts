@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { serverUrl } from './api-url';
 import { AuthService } from './auth.service';
 import { BoardService } from './board.service';
 import { WorkspaceService } from './workspace.service';
@@ -354,7 +355,7 @@ import { AttachmentItem } from './attachment.types';
                 <div *ngFor="let att of cardAttachments()" class="attachment-item-row">
                   <span class="attachment-file-name">📎 {{ att.fileName }}</span>
                   <div class="attachment-item-actions">
-                    <a [href]="'http://localhost:5108' + att.filePath" target="_blank" class="btn btn-secondary btn-sm">Download</a>
+                    <a [href]="serverUrl + att.filePath" target="_blank" class="btn btn-secondary btn-sm">Download</a>
                     <button class="btn btn-danger btn-sm btn-icon-only" (click)="deleteAttachment(att.id)">🗑</button>
                   </div>
                 </div>
@@ -771,6 +772,8 @@ import { AttachmentItem } from './attachment.types';
   `]
 })
 export class BoardsComponent implements OnInit {
+  serverUrl = serverUrl;
+
   // Services
   private authService = inject(AuthService);
   private boardService = inject(BoardService);

@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { serverUrl } from './api-url';
 import { AttachmentService } from './attachment.service';
 import { AttachmentItem } from './attachment.types';
 
@@ -46,12 +47,12 @@ import { AttachmentItem } from './attachment.types';
               <div class="attachment-info-block">
                 <span class="attachment-icon">📄</span>
                 <div>
-                  <a [href]="'http://localhost:5108' + att.filePath" target="_blank" class="attachment-name-link">{{ att.fileName }}</a>
+                  <a [href]="serverUrl + att.filePath" target="_blank" class="attachment-name-link">{{ att.fileName }}</a>
                   <span class="attachment-meta-date">Uploaded on: {{ att.uploadedAt | date:'medium' }}</span>
                 </div>
               </div>
               <div class="attachment-actions-block">
-                <a [href]="'http://localhost:5108' + att.filePath" target="_blank" class="btn btn-secondary btn-sm">Download</a>
+                    <a [href]="serverUrl + att.filePath" target="_blank" class="btn btn-secondary btn-sm">Download</a>
                 <button class="btn btn-danger btn-sm btn-icon-only" (click)="deleteAttachment(att.id)" title="Remove File">🗑</button>
               </div>
             </div>
@@ -115,6 +116,7 @@ import { AttachmentItem } from './attachment.types';
   `]
 })
 export class AttachmentsComponent implements OnInit {
+  serverUrl = serverUrl;
   attachments = signal<AttachmentItem[]>([]);
   selectedFile: File | null = null;
   cardId = '';

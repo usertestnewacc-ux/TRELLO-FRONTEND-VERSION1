@@ -57,7 +57,7 @@ export const routes: Routes = [
   {
     path: 'reports',
     component: ReportsComponent,
-    canActivate: [authGuard]
+    canActivate: [adminGuard]
   },
   {
     path: 'activity-logs',
