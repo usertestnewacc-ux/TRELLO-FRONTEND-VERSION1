@@ -25,7 +25,7 @@ import { RouterLink } from '@angular/router';
             <div class="feature-card">
               <div class="feature-icon bg-blue">📋</div>
               <h3>Boards</h3>
-              <p>Trello boards keep tasks organized and work moving forward. In a glance, see everything from "things to do" to "aww yeah, we did it!"</p>
+              <p>Trello boards keep tasks organized and work moving forward. In a glance, see everything from the "things to do" to aww yeah, we did it!</p>
             </div>
             <div class="feature-card">
               <div class="feature-icon bg-green">📄</div>
